@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b44">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Rugby Strength &amp; Engine – Daily Checklist</title>
 <style>
 :root{--bg:#f6f4ef;--card:#fff;--ink:#1c2a22;--mute:#667068;--line:#e2ded3;--acc:#1f6b44;--accsoft:#dcefe3;--warn:#b4531a;
@@ -148,6 +152,7 @@ while(frac(iso(c))===1&&s<400){s++;c.setDate(c.getDate()-1)}
 document.getElementById("sStreak").textContent=s}
 document.getElementById("reset").onclick=function(){if(confirm("Restart from week 1 and clear all ticks?")){S={start:today,data:{}};save();sel=today;render()}};
 render();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
 </script>
 </body>
 </html>
