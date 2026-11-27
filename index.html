@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rugby Strength &amp; Engine – Daily Checklist</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1c2a22;--mute:#667068;--line:#e2ded3;--acc:#1f6b44;--accsoft:#dcefe3;--warn:#b4531a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121815;--card:#1b241f;--ink:#e8efe9;--mute:#97a39a;--line:#2b3730;--acc:#58c487;--accsoft:#1f3a2b;--warn:#e69a62}}
+:root[data-theme="dark"]{--bg:#121815;--card:#1b241f;--ink:#e8efe9;--mute:#97a39a;--line:#2b3730;--acc:#58c487;--accsoft:#1f3a2b;--warn:#e69a62}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:4px 0 2px}
+.sub{color:var(--mute);font-size:.9rem;margin:0 0 14px}
+.stats{display:flex;gap:8px;margin-bottom:12px}
+.stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:1.3rem;color:var(--acc)}
+.stat span{font-size:.75rem;color:var(--mute)}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 0;text-align:center;font-size:.75rem;color:var(--mute);cursor:pointer;font-family:inherit}
+.day b{display:block;font-size:.95rem;color:var(--ink)}
+.day i{display:block;height:4px;margin:4px 8px 0;border-radius:2px;background:var(--line);overflow:hidden}
+.day i em{display:block;height:100%;background:var(--acc)}
+.day.sel{border:2px solid var(--acc)}
+.day.today b::after{content:"•";color:var(--acc)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:1rem;margin:0 0 2px}
+.tag{display:inline-block;font-size:.7rem;background:var(--accsoft);color:var(--acc);border-radius:99px;padding:2px 8px;margin-bottom:8px}
+.note{font-size:.85rem;color:var(--mute);margin:0 0 6px}
+label{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer}
+label:first-of-type{border-top:0}
+input{width:22px;height:22px;accent-color:var(--acc);flex:none;margin-top:1px}
+label span small{display:block;color:var(--mute);font-size:.82rem}
+input:checked+span{color:var(--mute);text-decoration:line-through}
+input:checked+span small{text-decoration:none}
+.done{text-align:center;color:var(--acc);font-weight:600;padding:8px;display:none}
+.foot{font-size:.8rem;color:var(--mute);margin-top:18px}
+button.reset{background:none;border:1px solid var(--line);color:var(--mute);border-radius:8px;padding:6px 10px;font:inherit;font-size:.8rem;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>🏉 Rugby Strength &amp; Engine</h1>
+<p class="sub" id="wk"></p>
+<div class="stats">
+<div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
+<div class="stat"><b id="sPct">0%</b><span>today</span></div>
+<div class="stat"><b id="sWeek">0%</b><span>this week</span></div>
+</div>
+<div class="strip" id="strip"></div>
+<div class="card" id="plan"></div>
+<div class="card" id="habits"></div>
+<div class="done" id="done">All done – job well done. 💪</div>
+<p class="foot">Build mileage and weights gradually. If something hurts (not just burns), swap the run for the bike or rower. Check with your GP before starting if you have any health concerns. <button class="reset" id="reset">Restart programme</button></p>
+</main>
+<script>
+var K="rugbyTracker.v1",S={start:null,data:{}};
+try{var raw=localStorage.getItem(K);if(raw)S=JSON.parse(raw)||S}catch(e){}
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function parse(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+var today=iso(new Date());
+if(!S.start||!S.data){S.start=today;S.data=S.data||{};save()}
+var sel=today;
+var HAB=[
+["mob","10 min mobility","Hips, hamstrings, calves, shoulders – before bed or at lunch"],
+["h2o","3 litres of water","Carry a bottle; more on training and match days"],
+["pro","Protein with every meal","Eggs, chicken, mince, fish, beans, Greek yoghurt – cheap and family friendly"],
+["veg1","Fruit or veg portion 1 of 5","A portion is roughly a handful. Frozen counts"],
+["veg2","Fruit or veg portion 2 of 5",""],
+["veg3","Fruit or veg portion 3 of 5","Add an extra veg to the family dinner"],
+["veg4","Fruit or veg portion 4 of 5",""],
+["veg5","Fruit or veg portion 5 of 5",""],
+["sug","No sugary drinks or snack-grazing","Swap for water, tea or fruit"],
+["stp","8,000 steps","Lunchtime walk or stairs count"],
+["slp","In bed in time for 7½ hours’ sleep","Recovery is where the strength gets built"]];
+function week(){var d=Math.floor((parse(today)-parse(S.start))/864e5);return Math.max(1,Math.floor(d/7)+1)}
+function ivl(w){return w<=2?"6 × 1 min hard / 2 min easy walk-jog":w<=4?"8 × 1 min hard / 90 sec easy":w<=6?"8 × 90 sec hard / 90 sec easy":"10 × 90 sec hard / 90 sec easy"}
+function plan(dt){
+var w=week(),dow=parse(dt).getDay(),run=Math.min(50,30+3*(w-1));
+var P={
+1:{t:"Strength A – Lower body",tag:"Lunchtime gym · 45 min",n:"Leave 1–2 reps in the tank. Add 2.5 kg when every set feels solid.",k:[
+["Warm-up: 5 min rower or bike + bodyweight squats","Easy pace"],
+["Trap-bar deadlift or back squat: 4 × 5","Heavy but clean form"],
+["Romanian deadlift: 3 × 8","Hamstrings protect you when sprinting"],
+["Walking lunges: 3 × 10 each leg","Dumbbells"],
+["Core: plank 3 × 45 sec + Pallof press 3 × 10","Each side"]]},
+2:{t:"Engine – Treadmill intervals",tag:"Lunchtime · 35–40 min",n:"Rugby is stop-start, so this builds exactly what you need. Hard = about 8/10 effort, not an all-out sprint.",k:[
+["5–8 min easy warm-up jog",""],
+["Intervals: "+ivl(w),"Week "+w+" of the progression"],
+["5 min easy cool-down walk",""],
+["Calves and hip flexor stretch","2 min each side"]]},
+3:{t:"Strength B – Upper &amp; pull",tag:"Lunchtime gym · 45 min",n:"Pulling strength matters for tackling, rucking and carrying.",k:[
+["Warm-up: 5 min row + band pull-aparts",""],
+["Bench or dumbbell press: 4 × 6",""],
+["Pull-ups or lat pulldown: 4 × 8","Use assistance if needed"],
+["Seated or bent-over row: 3 × 8",""],
+["Overhead press: 3 × 6",""],
+["Farmer’s carry: 3 × 30 m","Heavy, tall posture"]]},
+4:{t:"Rugby training night",tag:"Evening club session",n:"Keep the lunch break light so you arrive fresh.",k:[
+["Easy 20 min lunchtime walk","No gym today"],
+["Eat a proper carb + protein meal 2–3 hours before","Rice, potato or sweet potato with chicken or eggs"],
+["Warm up fully and train hard",""],
+["Post-session protein and a glass of water",""]],alt:{t:"Backup – Gym conditioning circuit",tag:"Evening gym or home · 35–40 min",n:"Training cancelled? This replaces it. Work hard, rest properly between rounds.",k:[["5 min easy row or bike warm-up","Plus a few bodyweight squats"],["Circuit × 4 rounds: 40 sec each of kettlebell swings, hard rower, press-ups, walking lunges","Rest 90 sec between rounds"],["Finisher: farmer’s carry 3 × 30 m","Heavy, tall posture"],["10 min mobility and a protein-rich meal",""]]}},
+5:{t:"Easy movement &amp; pre-match prep",tag:"Lunchtime · 25–30 min",n:"Keep it conversational. You should finish feeling better than you started.",k:[
+["25–30 min easy run, bike or brisk walk","Conversational pace"],
+["5 x 10 sec strides or light drills (optional)","Walk back recovery"],
+["Carb-up at dinner: extra rice, potato or sweet potato",""],
+["Pack your kit bag and be in bed early",""]]},
+6:{t:"Match day 🏉",tag:"80 minutes",n:"All the work is done. Enjoy it.",k:[
+["Breakfast: carbs + protein, 3 hours before kick-off","Eggs, potato or rice, fruit (wheat-free oats if you tolerate them)"],
+["Sip water through the morning",""],
+["Full warm-up: jog, dynamic stretches, a few sprints",""],
+["Play hard for 80 minutes",""],
+["Within an hour: protein + carbs, and fluids","Skip the post-match slump"]],alt:{t:"Backup – Match-simulation run",tag:"Treadmill or outdoors · 45 min",n:"Game off? This mimics the surges of an 80-minute match. Keep the hard bursts honest, the rest easy.",k:[["10 min warm-up: jog and dynamic stretches",""],["40 min run: easy pace with a 30 sec hard surge every 3 min","Walk breaks are fine"],["Finisher: push-ups 3 × 12 and farmer’s carry 3 × 30 m",""],["Protein + carb meal and fluids within an hour","Rice, potato or sweet potato with meat, fish or eggs"]]}},
+0:{t:"Long easy run",tag:"Outdoors or treadmill · "+run+" min",n:"Slow enough to chat. Add about 3 min each week. Treadmill at 1% incline is fine in the cold. Walk breaks are allowed.",k:[
+["Warm layers or treadmill ready, 5 min brisk walk first",""],
+["Run "+run+" min at easy pace","Walk breaks are fine"],
+["Mobility: calves, quads, hips 10 min","Foam roll if you have one"],
+["Plan the week: meals and lunch sessions","Pack gym kit the night before"]]}
+};
+var q=P[dow];q.hasAlt=!!q.alt;if(q.alt&&(S.data[dt]||{})._alt){var a=q.alt;a.hasAlt=true;a.isAlt=true;return a}return q}
+function tasks(dt){var p=plan(dt);return {p:p,ids:p.k.map(function(_,i){return "w"+i}).concat(HAB.map(function(h){return h[0]}))}}
+function frac(dt){var t=tasks(dt),d=S.data[dt]||{},n=0;t.ids.forEach(function(i){if(d[i])n++});return n/t.ids.length}
+function tick(id,v){var d=S.data[sel]||(S.data[sel]={});if(v)d[id]=1;else delete d[id];save();render()}
+function row(id,t,s,on){return '<label><input type="checkbox" data-id="'+id+'"'+(on?" checked":"")+'><span>'+t+(s?"<small>"+s+"</small>":"")+"</span></label>"}
+function render(){
+var w=week();document.getElementById("wk").textContent="Week "+w+" · "+parse(sel).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+var d=S.data[sel]||{},t=tasks(sel),p=t.p;
+document.getElementById("plan").innerHTML=(p.hasAlt?'<div style="margin-bottom:10px"><button class="reset" id="altBtn">'+(p.isAlt?"Back to normal plan":"Cancelled? Switch to backup plan")+"</button></div>":"")+'<span class="tag">'+p.tag+"</span><h2>"+p.t+'</h2><p class="note">'+p.n+"</p>"+p.k.map(function(k,i){return row("w"+i,k[0],k[1],d["w"+i])}).join("");
+document.getElementById("habits").innerHTML='<h2>Daily habits</h2><p class="note">Every day, same list.</p>'+HAB.map(function(h){return row(h[0],h[1],h[2],d[h[0]])}).join("");
+document.querySelectorAll("input[data-id]").forEach(function(c){c.onchange=function(){tick(c.dataset.id,c.checked)}});
+var ab=document.getElementById("altBtn");if(ab)ab.onclick=function(){var dd=S.data[sel]||(S.data[sel]={});Object.keys(dd).forEach(function(k){if(k.charAt(0)==="w")delete dd[k]});if(dd._alt)delete dd._alt;else dd._alt=1;save();render()};
+var f=frac(sel);document.getElementById("sPct").textContent=Math.round(f*100)+"%";
+document.getElementById("done").style.display=f===1?"block":"none";
+var now=parse(today),mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));
+var h="",sum=0,names=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+for(var i=0;i<7;i++){var x=new Date(mon);x.setDate(mon.getDate()+i);var k=iso(x),fr=frac(k);sum+=fr;
+h+='<button class="day'+(k===sel?" sel":"")+(k===today?" today":"")+'" data-d="'+k+'">'+names[i]+"<b>"+x.getDate()+"</b><i><em style=\"width:"+Math.round(fr*100)+'%"></em></i></button>'}
+var st=document.getElementById("strip");st.innerHTML=h;
+st.querySelectorAll(".day").forEach(function(b){b.onclick=function(){sel=b.dataset.d;render()}});
+document.getElementById("sWeek").textContent=Math.round(sum/7*100)+"%";
+var s=0,c=parse(today);if(frac(iso(c))<1)c.setDate(c.getDate()-1);
+while(frac(iso(c))===1&&s<400){s++;c.setDate(c.getDate()-1)}
+document.getElementById("sStreak").textContent=s}
+document.getElementById("reset").onclick=function(){if(confirm("Restart from week 1 and clear all ticks?")){S={start:today,data:{}};save();sel=today;render()}};
+render();
+</script>
+</body>
+</html>
